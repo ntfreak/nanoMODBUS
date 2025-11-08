@@ -244,13 +244,6 @@ nmbs_error nmbs_create(nmbs_t* nmbs, const nmbs_platform_conf* platform_conf) {
 
     nmbs->platform = *platform_conf;
 
-    if (!platform_conf->flush) {
-        nmbs->platform.flush = flush;
-    }
-    else {
-        nmbs->platform.flush = platform_conf->flush;    // allow custom flush implementation
-    }
-
     return NMBS_ERROR_NONE;
 }
 
@@ -268,6 +261,7 @@ void nmbs_set_byte_timeout(nmbs_t* nmbs, int32_t timeout_ms) {
 void nmbs_platform_conf_create(nmbs_platform_conf* platform_conf) {
     memset(platform_conf, 0, sizeof(nmbs_platform_conf));
     platform_conf->crc_calc = nmbs_crc_calc;
+    platform_conf->flush = flush;
     // Workaround for older user code not calling nmbs_platform_conf_create()
     platform_conf->initialized = 0xFFFFDEBE;
 }
