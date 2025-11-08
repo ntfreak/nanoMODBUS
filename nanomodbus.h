@@ -48,6 +48,8 @@
 extern "C" {
 #endif
 
+typedef struct nmbs_t nmbs_t;
+
 /**
  * nanoMODBUS errors.
  * Values <= 0 are library errors, > 0 are modbus exceptions.
@@ -117,7 +119,7 @@ typedef uint8_t nmbs_bitfield_256[32];
 /**
  * Write value v to the nmbs_bitfield bf at position b
  */
-#define nmbs_bitfield_write(bf, b, v) ((bf)[(b) >> 3] = ((bf)[(b) >> 3] & ~(1 << ((b) & 7))) | ((v) << ((b) & 7)))
+#define nmbs_bitfield_write(bf, b, v) ((bf)[(b) >> 3] = ((bf)[(b) >> 3] & ~(1 << ((b) &7))) | ((v) << ((b) &7)))
 /**
  * Reset (zero) the whole bitfield
  */
@@ -163,7 +165,8 @@ typedef struct nmbs_platform_conf {
                      void* arg); /*!< Bytes write transport function pointer */
     uint16_t (*crc_calc)(const uint8_t* data, uint32_t length,
                          void* arg); /*!< CRC calculation function pointer. Optional */
-    void* arg;                       /*!< User data, will be passed to functions above */
+    int32_t (*flush)(nmbs_t* nmbs);
+    void* arg;            /*!< User data, will be passed to functions above */
     uint32_t initialized; /*!< Reserved, workaround for older user code not calling nmbs_platform_conf_create() */
 } nmbs_platform_conf;
 
@@ -241,7 +244,7 @@ typedef struct nmbs_callbacks {
  * nanoMODBUS client/server instance type. All struct members are to be considered private,
  * it is not advisable to read/write them directly.
  */
-typedef struct nmbs_t {
+struct nmbs_t {
     struct {
         uint8_t buf[260];
         uint16_t buf_idx;
@@ -264,7 +267,7 @@ typedef struct nmbs_t {
     uint8_t address_rtu;
     uint8_t dest_address_rtu;
     uint16_t current_tid;
-} nmbs_t;
+};
 
 /**
  * Modbus broadcast address. Can be passed to nmbs_set_destination_rtu_address().

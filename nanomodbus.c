@@ -183,8 +183,8 @@ static nmbs_error send(const nmbs_t* nmbs, uint16_t count) {
 }
 
 
-static void flush(nmbs_t* nmbs) {
-    nmbs->platform.read(nmbs->msg.buf, sizeof(nmbs->msg.buf), 0, nmbs->platform.arg);
+static int32_t flush(nmbs_t* nmbs) {
+    return nmbs->platform.read(nmbs->msg.buf, sizeof(nmbs->msg.buf), 0, nmbs->platform.arg);
 }
 
 
@@ -241,6 +241,13 @@ nmbs_error nmbs_create(nmbs_t* nmbs, const nmbs_platform_conf* platform_conf) {
 
     if (!platform_conf->read || !platform_conf->write)
         return NMBS_ERROR_INVALID_ARGUMENT;
+
+    if (!platform_conf->flush) {
+        nmbs->platform.flush = flush;
+    }
+    else {
+        nmbs->platform.flush = platform_conf->flush;    // allow custom flush implementation
+    }
 
     nmbs->platform = *platform_conf;
 
