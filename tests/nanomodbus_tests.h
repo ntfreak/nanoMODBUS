@@ -8,6 +8,9 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <time.h>
+#ifdef __APPLE__
+typedef suseconds_t __suseconds_t;
+#endif
 #include <unistd.h>
 
 #define expect(expr) assert(expr)
