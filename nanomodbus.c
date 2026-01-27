@@ -589,7 +589,7 @@ static nmbs_error recv_read_registers_res(nmbs_t* nmbs, uint16_t quantity, uint1
     const uint8_t registers_bytes = get_1(nmbs);
     NMBS_DEBUG_PRINT("b %d\t", registers_bytes);
 
-    if (registers_bytes > 250)
+    if (registers_bytes > 250 || registers_bytes != quantity * 2)
         return NMBS_ERROR_INVALID_RESPONSE;
 
     err = recv(nmbs, registers_bytes);
@@ -607,9 +607,6 @@ static nmbs_error recv_read_registers_res(nmbs_t* nmbs, uint16_t quantity, uint1
     err = recv_msg_footer(nmbs);
     if (err != NMBS_ERROR_NONE)
         return err;
-
-    if (registers_bytes != quantity * 2)
-        return NMBS_ERROR_INVALID_RESPONSE;
 
     return NMBS_ERROR_NONE;
 }
