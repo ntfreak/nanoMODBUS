@@ -3,7 +3,7 @@
 
     MIT License
 
-    Copyright (c) 2024 Valerio De Benedetto (@debevv)
+    Copyright (c) 2026 Valerio De Benedetto (@debevv)
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,9 @@
 
 /*! \mainpage nanoMODBUS - A compact MODBUS RTU/TCP C library for microcontrollers
  * nanoMODBUS is a small C library that implements the Modbus protocol. It is especially useful in resource-constrained
- * system like microcontrollers.
+ * systems like microcontrollers.
  *
- * GtiHub: <a href="https://github.com/debevv/nanoMODBUS">https://github.com/debevv/nanoMODBUS</a>
+ * GitHub: <a href="https://github.com/debevv/nanoMODBUS">https://github.com/debevv/nanoMODBUS</a>
  *
  * API reference: \link nanomodbus.h \endlink
  *
@@ -42,7 +42,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -119,7 +118,7 @@ typedef uint8_t nmbs_bitfield_256[32];
 /**
  * Write value v to the nmbs_bitfield bf at position b
  */
-#define nmbs_bitfield_write(bf, b, v) ((bf)[(b) >> 3] = ((bf)[(b) >> 3] & ~(1 << ((b) &7))) | ((v) << ((b) &7)))
+#define nmbs_bitfield_write(bf, b, v) ((bf)[(b) >> 3] = ((bf)[(b) >> 3] & ~(1 << ((b) & 7))) | ((v) << ((b) & 7)))
 /**
  * Reset (zero) the whole bitfield
  */
@@ -540,6 +539,7 @@ nmbs_error nmbs_receive_raw_pdu_response(nmbs_t* nmbs, uint8_t* data_out, uint8_
 /** Calculate the Modbus CRC of some data.
  * @param data Data
  * @param length Length of the data
+ * @param arg Optional argument (passed when used as a platform function)
  */
 uint16_t nmbs_crc_calc(const uint8_t* data, uint32_t length, void* arg);
 

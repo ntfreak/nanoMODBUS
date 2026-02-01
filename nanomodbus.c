@@ -3,7 +3,7 @@
 
     MIT License
 
-    Copyright (c) 2024 Valerio De Benedetto (@debevv)
+    Copyright (c) 2026 Valerio De Benedetto (@debevv)
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ static void put_2(nmbs_t* nmbs, uint16_t data) {
 
 
 #ifndef NMBS_SERVER_DISABLED
-#if !defined(NMBS_SERVER_READ_DEVICE_IDENTIFICATION_DISABLED)
+#ifndef NMBS_SERVER_READ_DEVICE_IDENTIFICATION_DISABLED
 static void set_1(nmbs_t* nmbs, uint8_t data, uint8_t index) {
     nmbs->msg.buf[index] = data;
 }
@@ -105,7 +105,7 @@ static uint8_t* get_n(nmbs_t* nmbs, uint16_t n) {
 
 
 #ifndef NMBS_SERVER_DISABLED
-#if !defined(NMBS_SERVER_READ_DEVICE_IDENTIFICATION_DISABLED)
+#ifndef NMBS_SERVER_READ_DEVICE_IDENTIFICATION_DISABLED
 static void put_n(nmbs_t* nmbs, const uint8_t* data, uint8_t size) {
     memcpy(&nmbs->msg.buf[nmbs->msg.buf_idx], data, size);
     nmbs->msg.buf_idx += size;
@@ -113,7 +113,7 @@ static void put_n(nmbs_t* nmbs, const uint8_t* data, uint8_t size) {
 #endif
 
 
-#if !defined(NMBS_SERVER_WRITE_FILE_RECORD_DISABLED)
+#ifndef NMBS_SERVER_WRITE_FILE_RECORD_DISABLED
 static uint16_t* get_regs(nmbs_t* nmbs, uint16_t n) {
     uint16_t* msg_buf_ptr = (uint16_t*) (nmbs->msg.buf + nmbs->msg.buf_idx);
     nmbs->msg.buf_idx += n * 2;
@@ -404,7 +404,7 @@ static void put_msg_header(nmbs_t* nmbs, uint16_t data_length) {
 
 
 #ifndef NMBS_SERVER_DISABLED
-#if !defined(NMBS_SERVER_READ_DEVICE_IDENTIFICATION_DISABLED)
+#ifndef NMBS_SERVER_READ_DEVICE_IDENTIFICATION_DISABLED
 static void set_msg_header_size(nmbs_t* nmbs, uint16_t data_length) {
     if (nmbs->platform.transport == NMBS_TRANSPORT_TCP) {
         data_length += 2;
@@ -436,7 +436,7 @@ static nmbs_error recv_req_header(nmbs_t* nmbs, bool* first_byte_received) {
         return err;
 
     if (nmbs->platform.transport == NMBS_TRANSPORT_RTU) {
-        // Check if request is for us
+        // Check if the request is for us
         if (nmbs->msg.unit_id == NMBS_BROADCAST_ADDRESS)
             nmbs->msg.broadcast = true;
         else if (nmbs->msg.unit_id != nmbs->address_rtu)
@@ -857,7 +857,7 @@ nmbs_error recv_read_device_identification_res(nmbs_t* nmbs, uint8_t buffers_cou
         return NMBS_ERROR_INVALID_ARGUMENT;
 
     if (more_follows == 0)
-        next_object_id = 0x7F;    // This value is reserved in the spec, we use it to signal stream is finished
+        next_object_id = 0x7F;    // This value is reserved in the spec, we use it to signal the stream is finished
 
     if (next_object_id_out)
         *next_object_id_out = next_object_id;
@@ -1355,7 +1355,7 @@ static nmbs_error handle_read_file_record(nmbs_t* nmbs) {
         subreq[i].record_number = get_2(nmbs);
         subreq[i].record_length = get_2(nmbs);
 
-        response_data_size += 2 + subreq[i].record_length * 2;
+        response_data_size += 2 + (subreq[i].record_length * 2);
     }
 
     discard_n(nmbs, request_size % subreq_header_size);
@@ -1443,7 +1443,7 @@ static nmbs_error handle_write_file_record(nmbs_t* nmbs) {
     if (err != NMBS_ERROR_NONE)
         return err;
 
-    // We can save msg.buf index and use it later for context recovery.
+    // We can save the msg.buf index and use it later for context recovery.
     const uint16_t msg_buf_idx = nmbs->msg.buf_idx;
     discard_n(nmbs, request_size);
 
@@ -1480,7 +1480,7 @@ static nmbs_error handle_write_file_record(nmbs_t* nmbs) {
 
             NMBS_DEBUG_PRINT("a %d\tr %d\tl %d\t fwrite ", subreq_file_number_c, subreq_record_number_c,
                              subreq_record_length_c);
-            size -= (subreq_header_size + subreq_record_length_c * 2);
+            size -= (subreq_header_size + (subreq_record_length_c * 2));
         } while (size >= subreq_header_size);
 
         if (size)
@@ -1514,12 +1514,12 @@ static nmbs_error handle_write_file_record(nmbs_t* nmbs) {
                 return send_exception_msg(nmbs, NMBS_EXCEPTION_ILLEGAL_FUNCTION);
             }
 
-            size -= (subreq_header_size + subreq_record_length * 2);
+            size -= (subreq_header_size + (subreq_record_length * 2));
         } while (size >= subreq_header_size);
 
         if (!nmbs->msg.broadcast) {
             // The normal response to 'Write File' is an echo of the request.
-            // We can restore buffer index and response msg.
+            // We can restore the buffer index and response msg.
             nmbs->msg.buf_idx = msg_buf_idx;
             discard_n(nmbs, request_size);
 
