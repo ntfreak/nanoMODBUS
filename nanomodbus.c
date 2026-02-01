@@ -183,8 +183,8 @@ static nmbs_error send(const nmbs_t* nmbs, uint16_t count) {
 }
 
 
-static void flush(nmbs_t* nmbs) {
-    nmbs->platform.read(nmbs->msg.buf, sizeof(nmbs->msg.buf), 0, nmbs->platform.arg);
+static int32_t flush(nmbs_t* nmbs) {
+    return nmbs->platform.read(nmbs->msg.buf, sizeof(nmbs->msg.buf), 0, nmbs->platform.arg);
 }
 
 
@@ -212,7 +212,7 @@ static void msg_state_req(nmbs_t* nmbs, uint8_t fc) {
         nmbs->current_tid++;
 
     // Flush the remaining data on the line before sending the request
-    flush(nmbs);
+    nmbs->platform.flush(nmbs);
 
     msg_state_reset(nmbs);
     nmbs->msg.unit_id = nmbs->dest_address_rtu;
@@ -261,6 +261,7 @@ void nmbs_set_byte_timeout(nmbs_t* nmbs, int32_t timeout_ms) {
 void nmbs_platform_conf_create(nmbs_platform_conf* platform_conf) {
     memset(platform_conf, 0, sizeof(nmbs_platform_conf));
     platform_conf->crc_calc = nmbs_crc_calc;
+    platform_conf->flush = flush;
     // Workaround for older user code not calling nmbs_platform_conf_create()
     platform_conf->initialized = 0xFFFFDEBE;
 }
@@ -1881,7 +1882,7 @@ static nmbs_error handle_req_fc(nmbs_t* nmbs) {
             break;
 #endif
         default:
-            flush(nmbs);
+            nmbs->platform.flush(nmbs);
             if (!nmbs->msg.ignored)
                 err = send_exception_msg(nmbs, NMBS_EXCEPTION_ILLEGAL_FUNCTION);
     }
@@ -1941,7 +1942,7 @@ nmbs_error nmbs_server_poll(nmbs_t* nmbs) {
     err = handle_req_fc(nmbs);
     if (err != NMBS_ERROR_NONE) {
         if (err != NMBS_ERROR_TIMEOUT)
-            flush(nmbs);
+            nmbs->platform.flush(nmbs);
 
         return err;
     }
